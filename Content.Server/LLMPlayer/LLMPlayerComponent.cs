@@ -4,7 +4,7 @@ namespace Content.Server.LLMPlayer;
 
 /// <summary>
 ///     Marks an entity as being controlled by an LLM.
-///     Stores per-entity conversation history for context.
+///     Stores per-entity conversation history and character context.
 /// </summary>
 [RegisterComponent]
 public sealed partial class LLMPlayerComponent : Component
@@ -25,6 +25,31 @@ public sealed partial class LLMPlayerComponent : Component
     ///     Whether the LLM is currently waiting for a response.
     /// </summary>
     public bool AwaitingResponse;
+
+    /// <summary>
+    ///     The character's name for context building.
+    /// </summary>
+    public string CharacterName = string.Empty;
+
+    /// <summary>
+    ///     The character's species (e.g. Human, Dwarf, Reptilian).
+    /// </summary>
+    public string Species = string.Empty;
+
+    /// <summary>
+    ///     The character's age.
+    /// </summary>
+    public int Age;
+
+    /// <summary>
+    ///     The character's gender.
+    /// </summary>
+    public string Gender = string.Empty;
+
+    /// <summary>
+    ///     The character's job/role on the station.
+    /// </summary>
+    public string Job = string.Empty;
 }
 
 /// <summary>
