@@ -8,7 +8,7 @@ public sealed partial class CCVars
     ///     Whether LLM-controlled players are enabled.
     /// </summary>
     public static readonly CVarDef<bool> LLMPlayerEnabled =
-        CVarDef.Create("llm.enabled", false, CVar.SERVERONLY);
+        CVarDef.Create("llm.enabled", true, CVar.SERVERONLY);
 
     /// <summary>
     ///     The base URL for the Ollama API.
