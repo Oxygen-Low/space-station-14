@@ -37,6 +37,10 @@ public sealed class LLMPlayerSystem : EntitySystem
     private int _playerCount;
     private float _updateInterval;
 
+    private const int SystemMessageCount = 2;
+    private const int MaxConversationMessages = 22;
+    private const int MaxMessages = SystemMessageCount + MaxConversationMessages;
+
     private const string SystemPrompt =
         """
         You are a crew member aboard a space station. You are roleplaying as your character.
@@ -180,14 +184,13 @@ public sealed class LLMPlayerSystem : EntitySystem
 
     private void TrimHistory(LLMPlayerComponent llm)
     {
-        const int maxMessages = 24; // 2 system + up to 22 conversation messages
-        if (llm.ConversationHistory.Count <= maxMessages)
+        if (llm.ConversationHistory.Count <= MaxMessages)
             return;
 
-        // Keep system messages (first 2) and trim older conversation messages
-        var systemMessages = llm.ConversationHistory.GetRange(0, 2);
+        // Keep system messages (first SystemMessageCount) and trim older conversation messages
+        var systemMessages = llm.ConversationHistory.GetRange(0, SystemMessageCount);
         var recentMessages = llm.ConversationHistory.GetRange(
-            llm.ConversationHistory.Count - (maxMessages - 2), maxMessages - 2);
+            llm.ConversationHistory.Count - MaxConversationMessages, MaxConversationMessages);
 
         llm.ConversationHistory.Clear();
         llm.ConversationHistory.AddRange(systemMessages);
@@ -250,6 +253,8 @@ public sealed class LLMPlayerSystem : EntitySystem
                         {
                             mover.CurTickSprintMovement = moveDir;
                             mover.LastInputTick = _timing.CurTick;
+                            // MaxValue signals that this input applies to the entire tick,
+                            // matching the convention used by NPCSteeringSystem.
                             mover.LastInputSubTick = ushort.MaxValue;
                         }
                     }

@@ -11,6 +11,7 @@ public sealed partial class LLMPlayerComponent : Component
 {
     /// <summary>
     ///     Conversation history for LLM context, stored as a list of (role, content) pairs.
+    ///     Initialized per-entity when the component is added.
     /// </summary>
     [DataField]
     public List<LLMMessage> ConversationHistory = new();
