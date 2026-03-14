@@ -47,6 +47,7 @@ public sealed class LLMPlayerSystem : EntitySystem
     [Dependency] private readonly MobStateSystem _mobState = default!;
     [Dependency] private readonly DamageableSystem _damageable = default!;
     [Dependency] private readonly SharedInteractionSystem _interaction = default!;
+    [Dependency] private readonly SharedTransformSystem _transform = default!;
 
     private readonly OllamaService _ollama = new();
 
@@ -181,7 +182,7 @@ public sealed class LLMPlayerSystem : EntitySystem
         sb.Append($"Your role on the station is: {llm.Job}. ");
 
         // Add species-specific personality hints
-        sb.Append(llm.Species.ToString() switch
+        sb.Append(llm.Species switch
         {
             "Reptilian" => "As a Reptilian, you have a proud and noble demeanor. You appreciate warmth and dislike the cold. ",
             "Dwarf" => "As a Dwarf, you are sturdy and love hard work. You have a fondness for craftsmanship and mining. ",
@@ -261,7 +262,8 @@ public sealed class LLMPlayerSystem : EntitySystem
                 continue;
 
             // Skip items that are already held by someone
-            if (HasComp<HandsComponent>(Transform(itemEnt).ParentUid) && Transform(itemEnt).ParentUid != Transform(uid).MapUid)
+            var itemParentUid = Transform(itemEnt).ParentUid;
+            if (HasComp<HandsComponent>(itemParentUid) && itemParentUid != Transform(uid).MapUid)
                 continue;
 
             var itemName = Name(itemEnt);
@@ -288,7 +290,7 @@ public sealed class LLMPlayerSystem : EntitySystem
             if (otherXform.MapID != xform.MapID)
                 continue;
 
-            var distance = (otherXform.WorldPosition - xform.WorldPosition).Length();
+            var distance = (_transform.GetWorldPosition(otherXform) - _transform.GetWorldPosition(xform)).Length();
             if (distance > NearbyRange)
                 continue;
 
@@ -566,11 +568,10 @@ public sealed class LLMPlayerSystem : EntitySystem
         var xform = Transform(uid);
         var targetNameLower = targetName.ToLowerInvariant();
 
-        // Search all nearby entities (not just items)
+        // Search nearby interactable entities (items with ItemComponent that can be activated)
         _nearbyItemEntities.Clear();
         _lookup.GetEntitiesInRange(xform.Coordinates, NearbyRange, _nearbyItemEntities);
 
-        // First check items, then fall back to broader search
         foreach (var itemEnt in _nearbyItemEntities)
         {
             if (itemEnt.Owner == uid)
